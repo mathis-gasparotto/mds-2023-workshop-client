@@ -42,6 +42,10 @@ const images = [
   // 'image23.png'
 ]
 
+fs.mkdirSync('tmp', { recursive: true })
+fs.mkdirSync('tmp/images', { recursive: true })
+fs.mkdirSync('tmp/main', { recursive: true })
+
 async function resizeAllImages(imgList) {
   return Promise.all(
     imgList.map((image) => {
@@ -181,7 +185,7 @@ const createWindow = () => {
     const imagesResized = await resizeAllImages(images)
     const imageVideos = await generateImagesVideos(imagesResized)
     const muteVideo = await generateMainVideo(imageVideos)
-    const dst = './out.mp4'
+    const dst = './tmp/out.mp4'
     await addAudioToVideo('src/assets/audio.mp3', muteVideo, dst)
     cleanTmp()
 
