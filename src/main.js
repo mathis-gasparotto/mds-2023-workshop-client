@@ -7,6 +7,7 @@ const ffmpeg = require('fluent-ffmpeg')
 const fs = require('fs')
 const sharp = require('sharp')
 const path = require('node:path')
+const log = require('electron-log')
 
 ffmpeg.setFfmpegPath(ffmpegPath)
 ffmpeg.setFfprobePath(ffprobePath)
@@ -42,16 +43,17 @@ const images = [
   // 'image23.png'
 ]
 
-fs.mkdirSync('tmp', { recursive: true })
-fs.mkdirSync('tmp/images', { recursive: true })
-fs.mkdirSync('tmp/main', { recursive: true })
+fs.mkdirSync(path.join(__dirname, '../tmp'), { recursive: true })
+fs.mkdirSync(path.join(__dirname, '../tmp/images'), { recursive: true })
+fs.mkdirSync(path.join(__dirname, '../tmp/main'), { recursive: true })
+fs.mkdirSync(path.join(__dirname, '../logs'), { recursive: true })
 
 async function resizeAllImages(imgList) {
   return Promise.all(
     imgList.map((image) => {
       return new Promise((resolve, reject) => {
-        const dst = './tmp/images/' + image
-        return sharp('./src/assets/' + image)
+        const dst = path.join(__dirname, '../tmp/images/' + image)
+        return sharp(path.join(__dirname, './assets/' + image))
           .resize(videoWidth, videoHeight, {
             fit: sharp.fit.contain,
             position: 'center',
@@ -59,10 +61,10 @@ async function resizeAllImages(imgList) {
           })
           .toFile(dst, function (err, info) {
             if (err) {
-              console.error(err)
+              log.error(err)
               reject(new Error('Error resizing image ' + image))
             } else {
-              console.log('Image ' + image + ' resized')
+              log.info('Image ' + image + ' resized')
               resolve(dst)
             }
           })
@@ -75,9 +77,9 @@ async function generateImagesVideos(imgList) {
   return Promise.all(
     imgList.map((image, index) => {
       return new Promise((resolve, reject) => {
-        let imageName = image.split('/').pop()
+        let imageName = image.includes('/') ? image.split('/').pop() : image.split('\\').pop()
         imageName = imageName.split('.').slice(0, -1).join('.')
-        const dst = './tmp/images/' + imageName + '.mp4'
+        const dst = path.join(__dirname, '../tmp/images/' + imageName + '.mp4')
         ffmpeg()
           .input(image)
           .inputOptions(['-t ' + durationPerImage])
@@ -87,14 +89,14 @@ async function generateImagesVideos(imgList) {
           .duration(4)
           .size(videoWidth + 'x' + videoHeight)
           .on('start', () => {
-            console.log('Rendeging image ' + imageName + '...')
+            log.info('Rendeging image ' + imageName + '...')
           })
           .on('error', (err) => {
-            console.log(err)
-            reject(new Error('Error rendering image ' + image.split('/').pop()))
+            log.error(err)
+            reject(new Error('Error rendering image ' + imageName))
           })
           .on('end', () => {
-            console.log('Image ' + image.split('/').pop() + ' rendered')
+            log.info('Image ' + imageName + ' rendered')
             resolve(dst)
           })
           .saveToFile(dst)
@@ -104,11 +106,11 @@ async function generateImagesVideos(imgList) {
 }
 
 function cleanTmp() {
-  fs.readdirSync('tmp/main').forEach((file) => {
-    fs.unlinkSync('tmp/main/' + file)
+  fs.readdirSync(path.join(__dirname, '../tmp/main')).forEach((file) => {
+    fs.unlinkSync(path.join(__dirname, '../tmp/main/' + file))
   })
-  fs.readdirSync('tmp/images').forEach((file) => {
-    fs.unlinkSync('tmp/images/' + file)
+  fs.readdirSync(path.join(__dirname, '../tmp/images')).forEach((file) => {
+    fs.unlinkSync(path.join(__dirname, '../tmp/images/' + file))
   })
 }
 
@@ -120,19 +122,19 @@ async function generateMainVideo(imgList) {
   })
 
   return new Promise((resolve, reject) => {
-    const dst = './tmp/main/out.mp4'
+    const dst = path.join(__dirname, '../tmp/main/main_without_audio.mp4')
     command
       .outputFormat('mp4')
       .duration(images.length * durationPerImage)
       .on('start', () => {
-        console.log('Rendering main video...')
+        log.info('Rendering main video...')
       })
       .on('end', () => {
         resolve(dst)
-        console.log('Main video rendered')
+        log.info('Main video rendered')
       })
       .on('error', (err) => {
-        console.log(err)
+        log.error(err)
         reject(new Error('Error rendering main video'))
       })
       .concat(dst)
@@ -143,7 +145,7 @@ async function addAudioToVideo(audioPath, videoPath, dst) {
   const videoDuration = await new Promise((resolve, reject) => {
     ffmpeg.ffprobe(videoPath, (err, metadata) => {
       if (err) {
-        console.error(err)
+        log.error(err)
         reject(new Error('Error getting video duration'))
       } else {
         resolve(metadata.format.duration)
@@ -157,14 +159,14 @@ async function addAudioToVideo(audioPath, videoPath, dst) {
       .addInput(videoPath)
       .duration(videoDuration)
       .on('start', () => {
-        console.log('Rendering video with audio...')
+        log.info('Rendering video with audio...')
       })
       .on('end', () => {
         resolve()
-        console.log('Video with audio rendered')
+        log.info('Video with audio rendered')
       })
       .on('error', (err) => {
-        console.log(err)
+        log.error(err)
         reject(new Error('Error rendering video with audio'))
       })
       .saveToFile(dst)
@@ -182,21 +184,26 @@ const createWindow = () => {
 
   
   async function createVideo() {
+    log.info('Creating video...')
     const imagesResized = await resizeAllImages(images)
     const imageVideos = await generateImagesVideos(imagesResized)
     const muteVideo = await generateMainVideo(imageVideos)
-    const dst = './tmp/out.mp4'
-    await addAudioToVideo('src/assets/audio.mp3', muteVideo, dst)
+    const dst = path.join(__dirname, '../tmp/output.mp4')
+    await addAudioToVideo(path.join(__dirname, 'assets/audio.mp3'), muteVideo, dst)
     cleanTmp()
 
-    win.webContents.send('video-created', path.join(__dirname, '.' + dst))
+    win.webContents.send('video-created', dst)
 
-    console.log('YOOOUUH')
+    log.info('Video generated!')
   }
 
   ipcMain.on('generate-video', (event, params) => {
     createVideo()
   })
+
+  log.transports.file.resolvePathFn = () => {
+    return path.join(__dirname, '../logs/main.log')
+  }
 
   win.webContents.openDevTools()
 
