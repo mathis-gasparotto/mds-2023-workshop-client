@@ -19,90 +19,105 @@ const videoHeight = 1080
 const images = [
   'image.png',
   'image1.jpg',
-  // 'image2.jpg',
-  'image3.png'
-  // 'image4.png',
+  'image2.jpg',
+  'image3.png',
+  'image4.png',
   // 'image5.png',
   // 'image6.png',
-  // // 'image7.jpg',
-  // // 'image8.jpg',
+  // 'image7.jpg',
+  // 'image8.jpg',
   // 'image9.png',
   // 'image10.png',
   // 'image11.jpg',
   // 'image12.png',
   // 'image13.jpg',
-  // // 'image14.jpg',
-  // // 'image15.jpg',
+  // 'image14.jpg',
+  // 'image15.jpg',
   // 'image16.png',
   // 'image17.png',
-  // // 'image18.jpg',
+  // 'image18.jpg',
   // 'image19.png',
-  // // 'image20.jpg',
-  // // 'image21.jpg',
-  // // 'image22.jpg',
+  // 'image20.jpg',
+  // 'image21.jpg',
+  // 'image22.jpg',
   // 'image23.png'
 ]
 
 fs.mkdirSync(path.join(__dirname, '../tmp'), { recursive: true })
 fs.mkdirSync(path.join(__dirname, '../tmp/images'), { recursive: true })
 fs.mkdirSync(path.join(__dirname, '../tmp/main'), { recursive: true })
+fs.mkdirSync(path.join(__dirname, '../tmp/downloads'), { recursive: true })
+fs.mkdirSync(path.join(__dirname, '../tmp/videos'), { recursive: true })
 fs.mkdirSync(path.join(__dirname, '../logs'), { recursive: true })
 
-async function resizeAllImages(imgList) {
-  return Promise.all(
-    imgList.map((image) => {
-      return new Promise((resolve, reject) => {
-        const dst = path.join(__dirname, '../tmp/images/' + image)
-        return sharp(path.join(__dirname, './assets/' + image))
-          .resize(videoWidth, videoHeight, {
-            fit: sharp.fit.contain,
-            position: 'center',
-            background: { r: 0, g: 0, b: 0, alpha: 1 }
-          })
-          .toFile(dst, function (err, info) {
-            if (err) {
-              log.error(err)
-              reject(new Error('Error resizing image ' + image))
-            } else {
-              log.info('Image ' + image + ' resized')
-              resolve(dst)
-            }
-          })
+function shuffleArray(array) {
+  array.sort(() => Math.random() - 0.5)
+}
+
+function resizeImage(image) {
+  return new Promise((resolve, reject) => {
+    const dst = path.join(__dirname, '../tmp/images/' + image)
+    return sharp(path.join(__dirname, './assets/' + image))
+      .resize(videoWidth, videoHeight, {
+        fit: sharp.fit.contain,
+        position: 'center',
+        background: { r: 0, g: 0, b: 0, alpha: 1 }
       })
-    })
-  )
+      .toFile(dst, function (err, info) {
+        if (err) {
+          log.error(err)
+          reject(new Error('Error resizing image ' + image))
+        } else {
+          log.info('Image ' + image + ' resized')
+          resolve(dst)
+        }
+      })
+  })
+}
+
+async function resizeAllImages(imgList) {
+  const results = []
+  for (const image of imgList) {
+    const result = await resizeImage(image)
+    results.push(result)
+  }
+  return results
+}
+
+function generateSingleImageiVideo(image) {
+  return new Promise((resolve, reject) => {
+    let imageName = image.includes('/') ? image.split('/').pop() : image.split('\\').pop()
+    imageName = imageName.split('.').slice(0, -1).join('.')
+    const dst = path.join(__dirname, '../tmp/images/' + imageName + '.mp4')
+    ffmpeg()
+      .input(image)
+      .inputOptions(['-t ' + durationPerImage])
+      .loop(1)
+      .outputFormat('mp4')
+      .duration(4)
+      .size(videoWidth + 'x' + videoHeight)
+      .on('start', () => {
+        log.info('Rendering image video ' + imageName + '...')
+      })
+      .on('error', (err) => {
+        log.error(err)
+        reject(new Error('Error rendering image video ' + imageName))
+      })
+      .on('end', () => {
+        log.info('Image video ' + imageName + ' rendered')
+        resolve(dst)
+      })
+      .saveToFile(dst)
+  })
 }
 
 async function generateImagesVideos(imgList) {
-  return Promise.all(
-    imgList.map((image, index) => {
-      return new Promise((resolve, reject) => {
-        let imageName = image.includes('/') ? image.split('/').pop() : image.split('\\').pop()
-        imageName = imageName.split('.').slice(0, -1).join('.')
-        const dst = path.join(__dirname, '../tmp/images/' + imageName + '.mp4')
-        ffmpeg()
-          .input(image)
-          .inputOptions(['-t ' + durationPerImage])
-          .loop(1)
-          // .outputOptions(['-movflags isml+frag_keyframe'])
-          .outputFormat('mp4')
-          .duration(4)
-          .size(videoWidth + 'x' + videoHeight)
-          .on('start', () => {
-            log.info('Rendeging image ' + imageName + '...')
-          })
-          .on('error', (err) => {
-            log.error(err)
-            reject(new Error('Error rendering image ' + imageName))
-          })
-          .on('end', () => {
-            log.info('Image ' + imageName + ' rendered')
-            resolve(dst)
-          })
-          .saveToFile(dst)
-      })
-    })
-  )
+  const results = []
+  for (const image of imgList) {
+    const result = await generateSingleImageiVideo(image)
+    results.push(result)
+  }
+  return results
 }
 
 function cleanTmp() {
@@ -111,6 +126,9 @@ function cleanTmp() {
   })
   fs.readdirSync(path.join(__dirname, '../tmp/images')).forEach((file) => {
     fs.unlinkSync(path.join(__dirname, '../tmp/images/' + file))
+  })
+  fs.readdirSync(path.join(__dirname, '../tmp/downloads')).forEach((file) => {
+    fs.unlinkSync(path.join(__dirname, '../tmp/downloads/' + file))
   })
 }
 
@@ -141,7 +159,14 @@ async function generateMainVideo(imgList) {
   })
 }
 
-async function addAudioToVideo(audioPath, videoPath, dst) {
+async function addAudioToVideo(videoPath, dst) {
+  const audioList = fs.readdirSync(path.join(__dirname, 'assets/audio')).map((audio) => {
+    return path.join(__dirname, 'assets/audio/' + audio)
+  })
+  let audioDuration = 0
+  let audioIndex = 0
+  shuffleArray(audioList)
+
   const videoDuration = await new Promise((resolve, reject) => {
     ffmpeg.ffprobe(videoPath, (err, metadata) => {
       if (err) {
@@ -152,11 +177,39 @@ async function addAudioToVideo(audioPath, videoPath, dst) {
       }
     })
   })
+ 
+  while (audioDuration < videoDuration && audioIndex < audioList.length) {
+    const dur = await new Promise((resolve, reject) => {
+      ffmpeg.ffprobe(audioList[audioIndex], (err, metadata) => {
+        if (err) {
+          log.error('Error getting audio duration: ' + err)
+          reject(new Error('Error getting audio duration'))
+        } else {
+          resolve(metadata.format.duration)
+        }
+      })
+    })
+    audioDuration += dur
+    audioIndex++
+  }
+
+  audioList.splice(audioIndex)
+
   return new Promise((resolve, reject) => {
-    ffmpeg()
-      .addInput(audioPath)
-      // .loop(0)
+    const command = ffmpeg()
       .addInput(videoPath)
+
+    let complexFilter = ''
+    audioList.forEach((audio, index) => {
+      command.addInput(audio)
+      complexFilter += ' [' + (index + 1) + ':0]'
+    })
+    complexFilter += ' concat=n=' + (audioList.length) + ':v=0:a=1 [audio]'
+
+    command
+      .complexFilter([complexFilter.trim()])
+      .addOptions(['-map 0:v', '-map [audio]'])
+      .outputFormat('mp4')
       .duration(videoDuration)
       .on('start', () => {
         log.info('Rendering video with audio...')
@@ -173,6 +226,20 @@ async function addAudioToVideo(audioPath, videoPath, dst) {
   })
 }
 
+async function createVideo() {
+  log.info('Creating video...')
+  const imagesResized = await resizeAllImages(images)
+  const imageVideos = await generateImagesVideos(imagesResized)
+  const muteVideo = await generateMainVideo(imageVideos)
+  // const muteVideo = path.join(__dirname, '../tmp/main/main_without_audio.mp4')
+  const dst = path.join(__dirname, '../tmp/output.mp4')
+  await addAudioToVideo(muteVideo, dst)
+  cleanTmp()
+  log.info('Video generated!')
+
+  return dst
+}
+
 const createWindow = () => {
   const win = new BrowserWindow({
     webPreferences: {
@@ -182,23 +249,12 @@ const createWindow = () => {
     }
   })
 
-  
-  async function createVideo() {
-    log.info('Creating video...')
-    const imagesResized = await resizeAllImages(images)
-    const imageVideos = await generateImagesVideos(imagesResized)
-    const muteVideo = await generateMainVideo(imageVideos)
-    const dst = path.join(__dirname, '../tmp/output.mp4')
-    await addAudioToVideo(path.join(__dirname, 'assets/audio.mp3'), muteVideo, dst)
-    cleanTmp()
 
-    win.webContents.send('video-created', dst)
-
-    log.info('Video generated!')
-  }
 
   ipcMain.on('generate-video', (event, params) => {
-    createVideo()
+    createVideo().then((dst) => {
+      win.webContents.send('video-generated', dst)
+    })
   })
 
   log.transports.file.resolvePathFn = () => {
