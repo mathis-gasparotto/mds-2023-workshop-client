@@ -1,0 +1,258 @@
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+}
+
+#container {
+  width: 90%;
+  margin: auto;
+  z-index: 1;
+  margin-bottom: 20px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  z-index: 900;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+#btn-select {
+  display: none;
+}
+
+#btn-montage {
+  display: none;
+  margin-left: auto;
+}
+#btn-telecharger-video {
+  display: none;
+}
+.btn-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+button {
+  background-color: #555555;
+  color: white;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: white;
+  color: #555555;
+  border: 2px solid #555555;
+}
+
+#folders {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  cursor: pointer;
+}
+
+#folders li {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#photos {
+  display: grid;
+  list-style: none;
+  padding: 0;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.folder {
+  width: 60px;
+  height: 42px;
+  display: inline-block;
+  position: relative;
+  background-color: #708090;
+  border-radius: 0 3px 3px 3px;
+  margin-bottom: -8px;
+}
+
+.folder:before {
+  content: "";
+  width: 63%;
+  height: 0.4em;
+  border-radius: 0 20px 0 0;
+  background-color: #708090;
+  position: absolute;
+  top: -0.4em;
+  left: 0px;
+}
+
+#photos li {
+  margin: 10px;
+  flex: 0 0 200px;
+  box-sizing: border-box;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 200px;
+  height: 200px;
+  position: relative;
+}
+
+#photos img,
+#photos video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+#photos input[type="checkbox"] {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  transform: scale(1.5);
+}
+
+#container-loader {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+#generation-container-loader {
+  padding: 20px;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background-color: #fff;
+  width: 300px;
+}
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #000000;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  z-index: 1000;
+}
+#text-montage {
+  text-align: center;
+}
+#step-montage {
+  text-align: center;
+}
+#info-montage {
+  text-align: center;
+  font-size: 10px;
+}
+a {
+  text-decoration: none;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1001;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.8);
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.modal-content {
+  max-width: 80%;
+  max-height: 80%;
+  object-fit: contain;
+  border: 2px solid #ccc;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  display: block;
+  position: relative;
+  margin: auto;
+}
+
+.modal-content video {
+  cursor: pointer;
+}
+
+#caption {
+  margin: 20px auto;
+  display: block;
+  width: 80%;
+  text-align: center;
+  color: #ccc;
+  padding: 10px 0;
+}
+
+@keyframes zoom {
+  from {
+    transform: scale(0);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+.close {
+  position: absolute;
+  top: 15px;
+  right: 35px;
+  color: #aaa;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}

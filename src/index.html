@@ -5,18 +5,61 @@
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
+      content="default-src 'self'; script-src 'self' data: https://apis.google.com https://code.jquery.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https:; media-src 'self' https:; object-src 'self' https:; frame-src 'self' https:; font-src 'self' https:; connect-src 'self' https://www.googleapis.com; worker-src 'self' blob:; manifest-src 'self'"
     />
     <meta
       http-equiv="X-Content-Security-Policy"
       content="default-src 'self'; script-src 'self'"
     />
-    <title>Hello from Electron renderer!</title>
+    <title>Montage vidéo</title>
+    <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <h1>Hello from Electron renderer!</h1>
-    <p>👋</p>
-    <button id="btn">Test</button>
-    <script defer src="./renderer.js"></script>
+    <div id="container">
+      <div class="overlay"></div>
+      <h1>Montage vidéo</h1>
+      <div class="btn-container">
+        <button id="btn-load-folders" onclick="fetchFolders()">
+          Choisir le dossier
+        </button>
+      </div>
+      <ul id="folders"></ul>
+      <div id="btn-header">
+        <div id="btn-select">
+          <button onclick="selectAll()">Tout sélectionner</button>
+          <button onclick="deselectAll()">Tout désélectionner</button>
+        </div>
+        <button id="btn-montage" onclick="downloadFiles()">
+          Créer le montage vidéo
+        </button>
+        <a id="btn-telecharger-video" href="../outputs/output.mp4" download="output.mp4">
+          <button>Télécharger la vidéo</button>
+        </a>
+      </div>
+      <div id="container-loader">
+        <span class="loader"></span>
+      </div>
+      <div id="generation-container-loader">
+        <span class="loader"></span>
+        <p id="text-montage">Création du montage en cours...</p>
+        <p id="step-montage"></p>
+        <p id="info-montage"></p>
+      </div>
+      <ul id="photos"></ul>
+    </div>
+
+    <div id="myModal" class="modal">
+      <span class="close">&times;</span>
+      <div class="modal-content">
+        <img id="img01" style="display: none" />
+        <embed id="embedVideo" style="display: none" width="1080px" height="720px" />
+        <video id="vid01" style="display: none" controls>
+          <source id="videoSource" type="video/mp4" />
+        </video>
+      </div>
+      <div id="caption"></div>
+    </div>
+    <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> -->
+    <script src="./renderer.js"></script>
   </body>
 </html>
