@@ -5,4 +5,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getFolders: () => ipcRenderer.invoke('dialog:getFolders'),
   getFiles: (folderId) => ipcRenderer.invoke('dialog:getFiles', folderId),
   message: (callback) => ipcRenderer.on('message', (_event, value) => callback(value)),
+  clearOutputs: () => ipcRenderer.send('clearOutputs')
 })

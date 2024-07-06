@@ -23,6 +23,8 @@
           Choisir le dossier
         </button>
       </div>
+      <button id="btn-back-to-home" style="display: none;">Retourner à la page d'accueil</button>
+      <button id="btn-back-to-folders" style="display: none;">Retourner aux dossiers</button>
       <ul id="folders"></ul>
       <div id="btn-header">
         <div id="btn-select">
@@ -32,9 +34,12 @@
         <button id="btn-montage" onclick="downloadFiles()">
           Créer le montage vidéo
         </button>
-        <a id="btn-telecharger-video" href="../outputs/output.mp4" download="output.mp4">
-          <button>Télécharger la vidéo</button>
-        </a>
+        <div>
+          <a id="btn-telecharger-video" href="../outputs/output.mp4" download="output.mp4" style="display: none; margin-bottom: 20px;">
+            <button>Télécharger la vidéo</button>
+          </a>
+          <button id="btn-back-home-after-download" style="display: none;">Retourner à la page d'accueil</button>
+        </div>
       </div>
       <div id="container-loader">
         <span class="loader"></span>
@@ -52,7 +57,7 @@
       <span class="close">&times;</span>
       <div class="modal-content">
         <img id="img01" style="display: none" />
-        <embed id="embedVideo" style="display: none" width="1080px" height="720px" />
+        <embed id="embedVideo" style="display: none" width="1280px" height="720px" />
         <video id="vid01" style="display: none" controls>
           <source id="videoSource" type="video/mp4" />
         </video>

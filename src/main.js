@@ -520,11 +520,15 @@ const createWindow = () => {
   ipcMain.handle('dialog:getFolders', getDriveFolders)
   ipcMain.handle('dialog:getFiles', (event, fId) => listFilesInFolder(fId))
 
+  ipcMain.on('clearOutputs', () => {
+    cleanOutputs()
+  })
+
   log.transports.file.resolvePathFn = () => {
     return path.join(__dirname, '../logs/main.log')
   }
 
-  win.webContents.openDevTools()
+  // win.webContents.openDevTools()
 
   win.loadFile('./src/index.html')
 }

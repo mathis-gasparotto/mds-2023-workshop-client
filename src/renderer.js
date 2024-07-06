@@ -4,11 +4,11 @@ document.addEventListener("DOMContentLoaded", function () {
   window.electronAPI.message((value) => {
     if (value.type === 'info') {
       // console.log('[' + value.currentStep + '/' + value.maxStep + '] ' + value.text)
-      stepMontage.textContent = 'Etape : ' + value.currentStep + '/' + value.maxStep
+      stepMontage.textContent = 'Étape : ' + value.currentStep + '/' + value.maxStep
       infoMontage.textContent = value.text
     } else if (value.type === 'error') {
       // console.error('[' + value.currentStep + '/' + value.maxStep + '] ' + value.text)
-      stepMontage.textContent = 'Etape : ' + value.currentStep + '/' + value.maxStep
+      stepMontage.textContent = 'Étape : ' + value.currentStep + '/' + value.maxStep
       infoMontage.textContent = 'Erreur : ' + value.text
     }
   })
@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 async function fetchFolders() {
+  const backBtn = document.getElementById('btn-back-to-home')
   const loaderContainer = document.getElementById('container-loader')
   const overlay = document.querySelector('.overlay')
   const foldersList = document.getElementById('folders')
@@ -39,12 +40,21 @@ async function fetchFolders() {
       listItem.appendChild(folderIcon)
       listItem.appendChild(span)
       listItem.dataset.folderId = folder.id
-      listItem.onclick = () => fetchFiles(folder.id)
+      listItem.onclick = () => {
+        backBtn.style.display = 'none'
+        fetchFiles(folder.id)
+      }
       foldersList.appendChild(listItem)
     })
   } catch (error) {
     console.error(error)
   } finally {
+    backBtn.style.display = 'block'
+    backBtn.onclick = function () {
+      btnLoadFolders.style.display = 'block'
+      backBtn.style.display = 'none'
+      foldersList.innerHTML = ''
+    }
     overlay.style.display = 'none'
     loaderContainer.style.display = 'none'
     btnLoadFolders.style.display = 'none'
@@ -52,11 +62,13 @@ async function fetchFolders() {
 }
 
 async function fetchFiles(folderId) {
+  const backBtn = document.getElementById('btn-back-to-folders')
   const loaderContainer = document.getElementById('container-loader')
   const overlay = document.querySelector('.overlay')
   const fileList = document.getElementById('photos')
   const btnSelect = document.getElementById('btn-select')
   const foldersList = document.getElementById('folders')
+  const btnMontage = document.getElementById('btn-montage')
 
   foldersList.innerHTML = ''
   fileList.innerHTML = ''
@@ -116,12 +128,21 @@ async function fetchFiles(folderId) {
   } catch (error) {
     console.error(error)
   } finally {
+    backBtn.style.display = 'block'
+    backBtn.onclick = function () {
+      backBtn.style.display = 'none'
+      btnSelect.style.display = 'none'
+      fileList.innerHTML = ''
+      btnMontage.style.display = 'none'
+      fetchFolders()
+    }
     loaderContainer.style.display = 'none'
     overlay.style.display = 'none'
   }
 }
 
 async function downloadFiles() {
+  const backToFodlersBtn = document.getElementById('btn-back-to-folders')
   const loaderContainer = document.getElementById('generation-container-loader')
   const overlay = document.querySelector('.overlay')
   const checkboxes = document.querySelectorAll('#photos input[type="checkbox"]:checked')
@@ -144,13 +165,19 @@ async function downloadFiles() {
     btnSelect.style.display = 'none'
 
     const btnTelechargerVideo = document.getElementById('btn-telecharger-video')
+    const btnBackToHome = document.getElementById('btn-back-home-after-download')
     btnTelechargerVideo.href = dst
     btnTelechargerVideo.download = dst.includes('/') ? dst.split('/').pop() : dst.split('\\').pop()
     btnTelechargerVideo.style.display = 'block'
+    btnBackToHome.style.display = 'block'
+    btnBackToHome.style.display = 'block'
+    backToFodlersBtn.style.display = 'none'
 
-    btnTelechargerVideo.onclick = function () {
+    btnBackToHome.onclick = function () {
       btnTelechargerVideo.style.display = 'none'
+      btnBackToHome.style.display = 'none'
       btnLoadFolders.style.display = 'block'
+      window.electronAPI.clearOutputs()
     }
   }
 }
@@ -180,7 +207,7 @@ function showModal(file, type) {
   const captionText = document.getElementById('caption')
 
   if (type === 'image') {
-    modalImg.src = `https://drive.fife.usercontent.google.com/u/0/d/${file.id}=w1080-h720`
+    modalImg.src = `https://drive.fife.usercontent.google.com/u/0/d/${file.id}=w1280-h720`
     modalImg.setAttribute('crossorigin', 'anonymous')
     modalImg.style.display = 'block'
     modalVideo.style.display = 'none'
