@@ -462,10 +462,6 @@ const createWindow = () => {
   async function startCreatingVideo(fileIds) {
     try {
       const downloadDir = path.join(path.join(__dirname, '../tmp/downloads'))
-      if (!fs.existsSync(downloadDir)) {
-        fs.mkdirSync(downloadDir)
-      }
-
       sendStatusToWindow('Downloading contents...', 1, 'info')
 
       await Promise.all(fileIds.map(async fileId => {
@@ -496,7 +492,7 @@ const createWindow = () => {
     return new Promise((resolve, reject) => {
       res.data
         .on('end', () => {
-          sendStatusToWindow(`Downloaded file ${fileId} to ${filePath}`, 1, 'info')
+          sendStatusToWindow(`Downloaded file ${fileId}`, 1, 'info')
           resolve()
         })
         .on('error', err => {

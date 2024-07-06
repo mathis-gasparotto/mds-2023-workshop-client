@@ -17,9 +17,9 @@
     },
     "files": [
       "src/**/*",
-      "dist/**/*",
       "node_modules/**/*",
-      "package.json"
+      "package.json",
+      "google_credentials.json"
     ],
     "win": {
       "target": "nsis"
