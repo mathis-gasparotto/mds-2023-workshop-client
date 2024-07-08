@@ -8,7 +8,8 @@ const fs = require('fs')
 const path = require('node:path')
 const log = require('electron-log')
 const { google } = require('googleapis')
-const googleCredentials = require('../google_credentials.json')
+const Os = require('os')
+const googleCredentials = require('./google_credentials.json')
 
 ffmpeg.setFfmpegPath(ffmpegPath)
 ffmpeg.setFfprobePath(ffprobePath)
@@ -22,39 +23,40 @@ const fps = 25
 const generationSteps = 5
 
 const googleAuth = new google.auth.GoogleAuth({
-  // keyFile: path.join(__dirname, '../google_credentials.json'),
+  // keyFile: path.join(__dirname, './google_credentials.json'),
   credentials: googleCredentials,
   scopes: ['https://www.googleapis.com/auth/drive.readonly'],
 })
 const drive = google.drive({ version: 'v3', auth: googleAuth, })
 const folderId = '1MWxRUZ9O7aE7Q29KdWvS9If5al3ah3o0'
 
-fs.mkdirSync(path.join(__dirname, '../tmp'), { recursive: true })
-fs.mkdirSync(path.join(__dirname, '../tmp/images'), { recursive: true })
-fs.mkdirSync(path.join(__dirname, '../tmp/main'), { recursive: true })
-fs.mkdirSync(path.join(__dirname, '../tmp/downloads'), { recursive: true })
-fs.mkdirSync(path.join(__dirname, '../tmp/videos'), { recursive: true })
-fs.mkdirSync(path.join(__dirname, '../outputs'), { recursive: true })
-fs.mkdirSync(path.join(__dirname, '../logs'), { recursive: true })
+fs.mkdirSync(path.join(Os.tmpdir(), 'Montage Video'), { recursive: true })
+fs.mkdirSync(path.join(Os.tmpdir(), 'Montage Video/tmp'), { recursive: true })
+fs.mkdirSync(path.join(Os.tmpdir(), 'Montage Video/tmp/images'), { recursive: true })
+fs.mkdirSync(path.join(Os.tmpdir(), 'Montage Video/tmp/main'), { recursive: true })
+fs.mkdirSync(path.join(Os.tmpdir(), 'Montage Video/tmp/downloads'), { recursive: true })
+fs.mkdirSync(path.join(Os.tmpdir(), 'Montage Video/tmp/videos'), { recursive: true })
+fs.mkdirSync(path.join(Os.tmpdir(), 'Montage Video/outputs'), { recursive: true })
+fs.mkdirSync(path.join(Os.tmpdir(), 'Montage Video/logs'), { recursive: true })
 
 function cleanTmp() {
-  fs.readdirSync(path.join(__dirname, '../tmp/main')).forEach((file) => {
-    fs.unlinkSync(path.join(__dirname, '../tmp/main/' + file))
+  fs.readdirSync(path.join(Os.tmpdir(), 'Montage Video/tmp/main')).forEach((file) => {
+    fs.unlinkSync(path.join(Os.tmpdir(), 'Montage Video/tmp/main/' + file))
   })
-  fs.readdirSync(path.join(__dirname, '../tmp/images')).forEach((file) => {
-    fs.unlinkSync(path.join(__dirname, '../tmp/images/' + file))
+  fs.readdirSync(path.join(Os.tmpdir(), 'Montage Video/tmp/images')).forEach((file) => {
+    fs.unlinkSync(path.join(Os.tmpdir(), 'Montage Video/tmp/images/' + file))
   })
-  fs.readdirSync(path.join(__dirname, '../tmp/downloads')).forEach((file) => {
-    fs.unlinkSync(path.join(__dirname, '../tmp/downloads/' + file))
+  fs.readdirSync(path.join(Os.tmpdir(), 'Montage Video/tmp/downloads')).forEach((file) => {
+    fs.unlinkSync(path.join(Os.tmpdir(), 'Montage Video/tmp/downloads/' + file))
   })
-  fs.readdirSync(path.join(__dirname, '../tmp/videos')).forEach((file) => {
-    fs.unlinkSync(path.join(__dirname, '../tmp/videos/' + file))
+  fs.readdirSync(path.join(Os.tmpdir(), 'Montage Video/tmp/videos')).forEach((file) => {
+    fs.unlinkSync(path.join(Os.tmpdir(), 'Montage Video/tmp/videos/' + file))
   })
 }
 
 function cleanOutputs() {
-  fs.readdirSync(path.join(__dirname, '../outputs')).forEach((file) => {
-    fs.unlinkSync(path.join(__dirname, '../outputs/' + file))
+  fs.readdirSync(path.join(Os.tmpdir(), 'Montage Video/outputs')).forEach((file) => {
+    fs.unlinkSync(path.join(Os.tmpdir(), 'Montage Video/outputs/' + file))
   })
 }
 
@@ -136,7 +138,7 @@ async function checkFolderExists(fId) {
 const createWindow = () => {
   const win = new BrowserWindow({
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, './src/preload.js'),
       nodeIntegration: true,
       contextIsolation: true
     }
@@ -151,7 +153,7 @@ const createWindow = () => {
     return new Promise((resolve, reject) => {
       const imageNameWithExt = path.basename(image)
       const imageName = path.basename(image, path.extname(image))
-      const dst = path.join(__dirname, '../tmp/images/' + imageName + '.mp4')
+      const dst = path.join(Os.tmpdir(), 'Montage Video/tmp/images/' + imageName + '.mp4')
       ffmpeg()
         .input(image)
         .inputOptions(['-t ' + durationPerImage])
@@ -228,7 +230,7 @@ const createWindow = () => {
     return new Promise((resolve, reject) => {
       const videoName = path.basename(video, path.extname(video))
       const videoNameWithExt = path.basename(video)
-      const dst = path.join(__dirname, '../tmp/videos/' + videoName + '.mp4')
+      const dst = path.join(Os.tmpdir(), 'Montage Video/tmp/videos/' + videoName + '.mp4')
       ffmpeg()
         .input(video)
         .inputFormat(path.extname(video).slice(1))
@@ -325,12 +327,12 @@ const createWindow = () => {
     // }
 
     // I don't know why, but the concat filter doesn't work with the input method, so I have to creating a file with the list of files to be concatenated...
-    const listFilePath = path.join(__dirname, '../tmp/main/content_list.txt')
+    const listFilePath = path.join(Os.tmpdir(), 'Montage Video/tmp/main/content_list.txt')
     const fileContent = contentList.map(filePath => `file '${filePath}'`).join('\n')
     fs.writeFileSync(listFilePath, fileContent)
 
     return new Promise((resolve, reject) => {
-      const dst = path.join(__dirname, '../tmp/main/main_without_audio.mp4')
+      const dst = path.join(Os.tmpdir(), 'Montage Video/tmp/main/main_without_audio.mp4')
       command
         .input(listFilePath)
         .inputOptions(['-f', 'concat', '-safe', '0'])
@@ -356,8 +358,8 @@ const createWindow = () => {
   }
 
   async function addAudioToVideo(videoPath, dst) {
-    const audioList = fs.readdirSync(path.join(__dirname, 'assets/audio')).map((audio) => {
-      return path.join(__dirname, 'assets/audio/' + audio)
+    const audioList = fs.readdirSync(path.join(__dirname, 'src/assets/audio').replace('app.asar\\', '')).map((audio) => {
+      return path.join(__dirname, 'src/assets/audio/' + audio).replace('app.asar\\', '')
     })
     shuffleArray(audioList)
 
@@ -429,19 +431,19 @@ const createWindow = () => {
 
   async function createVideo() {
     sendStatusToWindow('Generating video...', 2, 'info')
-    const dst = path.join(__dirname, '../outputs/' + Date.now() + '.mp4')
+    const dst = path.join(Os.tmpdir(), 'Montage Video/outputs/' + Date.now() + '.mp4')
 
-    const downloadContent = fs.readdirSync(path.join(__dirname, '../tmp/downloads'))
+    const downloadContent = fs.readdirSync(path.join(Os.tmpdir(), 'Montage Video/tmp/downloads'))
 
     const downloadImages = downloadContent.filter((file) => {
       const extension = path.extname(file)
       return extension === '.png' || extension === '.jpg' || extension === '.jpeg'
-    }).map((file) => path.join(__dirname, '../tmp/downloads/' + file))
+    }).map((file) => path.join(Os.tmpdir(), 'Montage Video/tmp/downloads/' + file))
 
     const downloadVideos = downloadContent.filter((file) => {
       const extension = path.extname(file)
       return extension === '.mp4' || extension === '.webm' || extension === '.ogg' || extension === '.mov'
-    }).map((file) => path.join(__dirname, '../tmp/downloads/' + file))
+    }).map((file) => path.join(Os.tmpdir(), 'Montage Video/tmp/downloads/' + file))
 
 
     try {
@@ -461,7 +463,7 @@ const createWindow = () => {
 
   async function startCreatingVideo(fileIds) {
     try {
-      const downloadDir = path.join(path.join(__dirname, '../tmp/downloads'))
+      const downloadDir = path.join(path.join(Os.tmpdir(), 'Montage Video/tmp/downloads'))
       sendStatusToWindow('Downloading contents...', 1, 'info')
 
       await Promise.all(fileIds.map(async fileId => {
@@ -521,7 +523,7 @@ const createWindow = () => {
   })
 
   log.transports.file.resolvePathFn = () => {
-    return path.join(__dirname, '../logs/main.log')
+    return path.join(Os.tmpdir(), 'Montage Video/logs/main.log')
   }
 
   // win.webContents.openDevTools()

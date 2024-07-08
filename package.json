@@ -4,19 +4,19 @@
   "author": "Mathis Gasparotto <mathis.gasparotto@hotmail.com>",
   "license": "ISC",
   "description": "App for generating video montages",
-  "main": "src/main.js",
+  "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "package:x64": "npx @electron/packager . montage-video --platform=win32 --arch=x64 --out=dist --overwrite",
-    "package:ia32": "npx @electron/packager . montage-video --platform=win32 --arch=ia32 --out=dist --overwrite",
+    "package:win:x64": "npx @electron/packager . montage-video --platform=win32 --arch=x64 --out=dist --overwrite",
+    "package:win:ia32": "npx @electron/packager . montage-video --platform=win32 --arch=ia32 --out=dist --overwrite",
     "build": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "buildIntall:win:x64": "npx electron-installer-windows --src dist/montage-video-win32-x64/ --dest dist/installers/win32-x64/ --name MontageVideoSetup",
-    "buildIntall:win:ia32": "npx electron-installer-windows --src dist/montage-video-win32-ia32/ --dest dist/installers/win32-ia32/ --name MontageVideoSetup"
+    "build:win:x64": "electron-builder build --win --x64",
+    "build:win:ia32": "electron-builder build --win --ia32",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "build": {
     "appId": "com.montage-video.id",
-    "productName": "MontageVideo",
+    "productName": "Montage Video",
     "directories": {
       "output": "dist/build"
     },
@@ -24,7 +24,11 @@
       "src/**/*",
       "node_modules/**/*",
       "package.json",
-      "google_credentials.json"
+      "google_credentials.json",
+      "main.js"
+    ],
+    "extraResources": [
+      "src/assets/**/*"
     ],
     "win": {
       "target": "nsis"
@@ -41,7 +45,8 @@
     "ffmpeg-static": "^5.2.0",
     "ffprobe-static": "^3.1.0",
     "fluent-ffmpeg": "^2.1.3",
-    "googleapis": "^140.0.1"
+    "googleapis": "^140.0.1",
+    "os": "^0.1.2"
   },
   "engine": {
     "node": "20"
@@ -49,7 +54,6 @@
   "devDependencies": {
     "@electron/packager": "^18.3.3",
     "electron": "^30.1.2",
-    "electron-builder": "^24.13.3",
-    "electron-installer-windows": "^3.0.0"
+    "electron-builder": "^24.13.3"
   }
 }
