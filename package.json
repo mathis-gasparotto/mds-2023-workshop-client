@@ -1,17 +1,22 @@
 {
-  "name": "workshop",
+  "name": "montage-video",
   "version": "1.0.0",
+  "author": "Mathis Gasparotto <mathis.gasparotto@hotmail.com>",
+  "license": "ISC",
+  "description": "App for generating video montages",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "package:x64": "npx @electron/packager . Workshop --platform=win32 --arch=x64 --out=dist --overwrite",
-    "package:ia32": "npx @electron/packager . Workshop --platform=win32 --arch=ia32 --out=dist --overwrite",
+    "package:x64": "npx @electron/packager . montage-video --platform=win32 --arch=x64 --out=dist --overwrite",
+    "package:ia32": "npx @electron/packager . montage-video --platform=win32 --arch=ia32 --out=dist --overwrite",
     "build": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "buildIntall:win:x64": "npx electron-installer-windows --src dist/montage-video-win32-x64/ --dest dist/installers/win32-x64/ --name MontageVideoSetup",
+    "buildIntall:win:ia32": "npx electron-installer-windows --src dist/montage-video-win32-ia32/ --dest dist/installers/win32-ia32/ --name MontageVideoSetup"
   },
   "build": {
-    "appId": "com.workshop.id",
-    "productName": "Workshop",
+    "appId": "com.montage-video.id",
+    "productName": "MontageVideo",
     "directories": {
       "output": "dist/build"
     },
@@ -31,9 +36,6 @@
       "target": "AppImage"
     }
   },
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "electron-log": "^5.1.5",
     "ffmpeg-static": "^5.2.0",
@@ -47,6 +49,7 @@
   "devDependencies": {
     "@electron/packager": "^18.3.3",
     "electron": "^30.1.2",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "electron-installer-windows": "^3.0.0"
   }
 }
