@@ -34,11 +34,12 @@
         <button id="btn-montage" onclick="downloadFiles()">
           Créer le montage vidéo
         </button>
-        <div>
-          <a id="btn-telecharger-video" href="../outputs/output.mp4" download="output.mp4" style="display: none; margin-bottom: 20px;">
+        <div id="video-generated-view" style="display: none; flex-direction: column;">
+          <button id="btn-back-home-after-download" style="margin-bottom: 20px; width: fit-content;">Retourner à la page d'accueil</button>
+          <video id="video-generated-player" width="848px" height="480px" style="margin-bottom: 20px;" controls></video>
+          <a id="btn-telecharger-video" href="../outputs/output.mp4" download="output.mp4">
             <button>Télécharger la vidéo</button>
           </a>
-          <button id="btn-back-home-after-download" style="display: none;">Retourner à la page d'accueil</button>
         </div>
       </div>
       <div id="container-loader">
@@ -58,9 +59,9 @@
       <div class="modal-content">
         <img id="img01" style="display: none" />
         <embed id="embedVideo" style="display: none" width="1280px" height="720px" />
-        <video id="vid01" style="display: none" controls>
+        <!-- <video id="vid01" style="display: none" controls>
           <source id="videoSource" type="video/mp4" />
-        </video>
+        </video> -->
       </div>
       <div id="caption"></div>
     </div>

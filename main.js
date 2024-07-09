@@ -340,6 +340,7 @@ const createWindow = () => {
         .outputOptions('-c:a', 'copy')
         // .duration((imgList.length * durationPerImage) + videosDuration)
         .fps(fps)
+        .audioFilters('volume=0')
         .outputOption('-preset ' + compressionPreset)
         .on('start', () => {
           sendStatusToWindow('Rendering main video without audio...', 4, 'info')

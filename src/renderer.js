@@ -142,7 +142,7 @@ async function fetchFiles(folderId) {
 }
 
 async function downloadFiles() {
-  const backToFodlersBtn = document.getElementById('btn-back-to-folders')
+  const backToFoldersBtn = document.getElementById('btn-back-to-folders')
   const loaderContainer = document.getElementById('generation-container-loader')
   const overlay = document.querySelector('.overlay')
   const checkboxes = document.querySelectorAll('#photos input[type="checkbox"]:checked')
@@ -164,18 +164,19 @@ async function downloadFiles() {
     overlay.style.display = 'none'
     btnSelect.style.display = 'none'
 
+    const view = document.getElementById('video-generated-view')
+    view.style.display = 'flex'
     const btnTelechargerVideo = document.getElementById('btn-telecharger-video')
+    const videoGeneratedPlayer = document.getElementById('video-generated-player')
     const btnBackToHome = document.getElementById('btn-back-home-after-download')
+    videoGeneratedPlayer.src = dst
     btnTelechargerVideo.href = dst
-    btnTelechargerVideo.download = dst.includes('/') ? dst.split('/').pop() : dst.split('\\').pop()
-    btnTelechargerVideo.style.display = 'block'
-    btnBackToHome.style.display = 'block'
-    btnBackToHome.style.display = 'block'
-    backToFodlersBtn.style.display = 'none'
+    btnTelechargerVideo.download = dst.split('/').pop()
+    backToFoldersBtn.style.display = 'none'
 
     btnBackToHome.onclick = function () {
-      btnTelechargerVideo.style.display = 'none'
-      btnBackToHome.style.display = 'none'
+      videoGeneratedPlayer.src = ''
+      view.style.display = 'none'
       btnLoadFolders.style.display = 'block'
       window.electronAPI.clearOutputs()
     }
